@@ -4,12 +4,16 @@ A console version of Minesweeper
 ## Images
 ![image](https://user-images.githubusercontent.com/98898166/177020655-7002c989-2a68-482f-9e79-0e64b961a299.png)
 
-
 ## Compatibility
 
 - This is compatible with Windows. This program relies on libraries such as `Windows.h` and `conio.h`, which are not portable.
 - Use Visual Studio's C++ compiler for the best experience. This was not tested on any other compiler.
 - Consoles that support ANSI Escape Codes are required. cmd on Windows does not support this, instead, use the Terminal application.
+
+## Setup
+
+- A compiled binary can be found for some releases in the attachments of a release.
+- If there is no compiled attachment, compile the code yourself by first downloading this repository and compiling using `g++ Minesweeper.cpp`
 
 ## Controls
 
