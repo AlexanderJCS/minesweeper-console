@@ -206,40 +206,28 @@ class Game
         switch (_getch())
         {
         case 'w':
-            if (cursorPos[1] > 0)
-            {
-                cursorPos[1] -= 1;
-            }
-            
+            moveCursor(0, -1);
             break;
 
         case 's':
-            if (cursorPos[1] + 1 < height)
-            {
-                cursorPos[1] += 1;
-            }
-            
+            moveCursor(0, 1);
             break;
 
         case 'a':
-            if (cursorPos[0] > 0)
-            {
-                cursorPos[0] -= 1;
-            }
-
+            moveCursor(-1, 0);
             break;
 
         case 'd':
-            if (cursorPos[0] < width - 1)
-            {
-                cursorPos[0] += 1;
-            }
-
+            moveCursor(1, 0);
             break;
 
-        case 'q':
-            // Flip the boolean
-            grid[cursorPos[1]][cursorPos[0]].flagged ^= true;
+        case 'f':
+            if (!grid[cursorPos[1]][cursorPos[0]].revealed)
+            {
+                // Flip the boolean
+                grid[cursorPos[1]][cursorPos[0]].flagged ^= true;
+            }
+            
             break;
 
         case 'e':
@@ -248,6 +236,16 @@ class Game
         }
     }
 
+
+    void moveCursor(int xDiff, int yDiff)
+    {
+        if (cursorPos[0] + xDiff <= width - 1 && cursorPos[0] + xDiff >= 0 && 
+            cursorPos[1] + yDiff <= height - 1 && cursorPos[1] + yDiff >= 0)
+        {
+			cursorPos[0] += xDiff;
+			cursorPos[1] += yDiff;
+        }
+    }
 
 	/*
     Selects the space for the cursor
@@ -391,38 +389,34 @@ public:
 
         generateGrid();
         generateAdjacentBombValues();
-
-        int i = 0;  // used to execute a command after n amount of frames
 		
         while (true)
-        {	
-            if (won())
+        {
+			for (int i = 0; i < 10; i++)
             {
-                draw(true);
-				std::cout << "You won!\n";
-				break;
-            }
-			
-            if (lost())
-            {
-                draw(true);
-                std::cout << "You lost.\n";
-                break;
+                if (won())
+                {
+                    draw(true);
+                    std::cout << "\nYou won!\n";
+                    break;
+                }
+
+                if (lost())
+                {
+                    draw(true);
+                    std::cout << "\nYou lost.\n";
+                    break;
+                }
+
+                draw(false);
+                getInput();
+
+
+                Sleep(30);
             }
 
-            draw(false);
-            getInput();
-			
-            if (i == 10)
-            {
-                i = 0;
-                // Allows for resizing of the window without losing the cursor settings
-                ShowConsoleCursor(false);  
-            }
-
-			i++;
-
-            Sleep(30);
+            // Allows for resizing of the window without losing the cursor settings
+            ShowConsoleCursor(false);
         }
 
         Sleep(5000);
