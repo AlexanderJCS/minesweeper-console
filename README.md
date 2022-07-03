@@ -19,6 +19,7 @@ A console version of Minesweeper
 - Use WASD to navigate your cursor
 - Use E to select a space. If you select a bomb, you lose.
 - Use Q to flag a space. If all bombs are flagged, you win.
+- In most consoles, you can use ctrl + scroll wheel to zoom in and out. This may be helpful since the board is small otherwise.
 
 ## How to play
 
