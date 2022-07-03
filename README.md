@@ -9,6 +9,7 @@ A console version of Minesweeper
 
 - This is compatible with Windows. This program relies on libraries such as `Windows.h` and `conio.h`, which are not portable.
 - Use Visual Studio's C++ compiler for the best experience. This was not tested on any other compiler.
+- Consoles that support ANSI Escape Codes are required. cmd on Windows does not support this, instead, use the Terminal application.
 
 ## Controls
 
