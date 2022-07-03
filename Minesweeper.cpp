@@ -4,10 +4,14 @@
 #include <vector>
 
 
-const int WIDTH = 10;
-const int HEIGHT = 10;
-const int BOMB_CHANCE = 7;  // Lower is more likely
+const int WIDTH = 15;
+const int HEIGHT = 15;
+const int BOMB_CHANCE = 6;  // Lower is more likely, 1 / BOMB_CHANCE of a space being a bomb.
 
+
+/*
+This function is used to hide the cursor in the console to prevent the cursor from being distracting.
+*/
 
 void ShowConsoleCursor(bool showFlag)
 {
@@ -34,15 +38,23 @@ class Game
 {
     std::vector<std::vector<Gridspace>> grid;
     std::vector<int> cursorPos = { 0, 0 };
-    bool firstReveal = true;
+    bool firstReveal = true;  // First reveal says if the first selection of a space was made.
+
+    int width = WIDTH;
+	int height = HEIGHT;
+
+	/*
+    Generates a grid that is WIDTH x HEIGHT.
+	Each space has a 1 / BOMB_CHANCE chance of being a bomb.
+    */
 
     void generateGrid()
     {
-        for (int i = 0; i < WIDTH; i++)
+        for (int i = 0; i < width; i++)
         {
             std::vector<Gridspace> row;
             
-            for (int j = 0; j < HEIGHT; j++)
+            for (int j = 0; j < height; j++)
             {
                 Gridspace g;
                 
@@ -58,6 +70,10 @@ class Game
         }
     }
     
+	/*
+    Used at the start of the game to generate the numbers to tell the player if that space is next to a bomb.
+    */
+
     void generateAdjacentBombValues()
     {
         for (int y = 0; y < grid.size(); y++)
@@ -88,6 +104,12 @@ class Game
         }
     }
 
+	/*
+    Draws the board. 
+    The ignoreRevealed argument is used to ignore if the gridspace is revealed or not.
+	This is useful when the game is over and the entire board needs to be shown.
+    */
+	
     void draw(bool ignoreRevealed)
     {
         std::cout << "\033[1;1H";
@@ -100,11 +122,11 @@ class Game
 
         std::cout << "\n";
 
-        for (int y = 0; y < HEIGHT; y++)
+        for (int y = 0; y < height; y++)
         {
             std::cout << "#";
 			
-            for (int x = 0; x < WIDTH; x++)
+            for (int x = 0; x < width; x++)
             {
                 if (x == cursorPos[0] && y == cursorPos[1])
                 {
@@ -170,6 +192,10 @@ class Game
 		}
     }
 
+	/*
+    Gets input from the user and executes an appropriate action.
+    */
+
     void getInput()
     {
         if (!_kbhit())
@@ -188,7 +214,7 @@ class Game
             break;
 
         case 's':
-            if (cursorPos[1] + 1 < HEIGHT)
+            if (cursorPos[1] + 1 < height)
             {
                 cursorPos[1] += 1;
             }
@@ -204,47 +230,63 @@ class Game
             break;
 
         case 'd':
-            if (cursorPos[0] < WIDTH - 1)
+            if (cursorPos[0] < width - 1)
             {
                 cursorPos[0] += 1;
             }
 
             break;
 
-        case 'f':
+        case 'q':
             // Flip the boolean
             grid[cursorPos[1]][cursorPos[0]].flagged ^= true;
             break;
 
         case 'e':
-            if (grid[cursorPos[1]][cursorPos[0]].flagged)
-            {
-                break;
-            }
-
-            if (firstReveal)
-            {
-                firstReveal = false;
-				
-                while (grid[cursorPos[1]][cursorPos[0]].bomb ||
-                    grid[cursorPos[1]][cursorPos[0]].adjacentBombs)
-                {
-					// Regenrate the board
-					grid.clear();
-					generateGrid();
-					generateAdjacentBombValues();
-                }
-            }
-
-            revealAdjacentSpaces(cursorPos[0], cursorPos[1]);
+            selectSpace();
             break;
         }
     }
 
+
+	/*
+    Selects the space for the cursor
+    */
+	
+    void selectSpace()
+    {
+        if (grid[cursorPos[1]][cursorPos[0]].flagged)
+        {
+            return;
+        }
+
+		// If the first action was made, make sure that you are not selecting a number or a bomb.
+        if (firstReveal)
+        {
+            firstReveal = false;
+
+            while (grid[cursorPos[1]][cursorPos[0]].bomb ||
+                grid[cursorPos[1]][cursorPos[0]].adjacentBombs)
+            {
+                // Regenrate the board
+                grid.clear();
+                generateGrid();
+                generateAdjacentBombValues();
+            }
+        }
+
+        revealAdjacentSpaces(cursorPos[0], cursorPos[1]);
+    }
+
+	/*
+    This method reveals all spaces in a certain region.
+	This is used when the player selects a space that is not numbered or a bomb.
+    */
+
     void revealAdjacentSpaces(int x, int y)
     {
 		// If the x or y is outside the grid, return
-        if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
+        if (x < 0 || x >= width || y < 0 || y >= height)
         {
             return;
         }
@@ -263,6 +305,7 @@ class Game
             return;
         }
 
+		// Reveal all adjacent spaces (e.g. top left, top, bottom left, etc.)
         for (int i = y - 1; i < y + 2; i++)
         {
             for (int j = x - 1; j < x + 2; j++)
@@ -276,6 +319,11 @@ class Game
             }
         }
     }
+
+	/*
+    Checks if the player won the game.
+	Returns true if the player won, false if the player lost or if the game is still ongoing.
+    */
 
     bool won()
     {
@@ -298,6 +346,11 @@ class Game
 		return true;
     }
 
+	/*
+    Returns true if the player lost the game.
+    Returns false if the game is still ongoing.
+    */
+	
     bool lost()
     {
         for (int y = 0; y < grid.size(); y++)
@@ -318,7 +371,24 @@ class Game
 public:
     void run()
     {
+		// Get the width and height of the game
+        std::cout << "Enter the width of the game (type 0 for default): ";
+        std::cin >> width;
+		std::cout << "Enter the height of the game (type 0 for default): ";
+		std::cin >> height;
+
+        if (width == 0)
+        {
+            width = WIDTH;
+        }
 		
+		if (height == 0)
+		{
+			height = HEIGHT;
+		}
+		
+        system("cls");
+
         generateGrid();
         generateAdjacentBombValues();
 
@@ -360,7 +430,7 @@ public:
 };
 
 int main()
-{
+{	
     ShowConsoleCursor(false);
     srand(time(0));
 
